@@ -5,9 +5,7 @@ import {
   makeStyles
 } from '@material-ui/core';
 import Page from 'src/components/Page';
-import Results from './Results';
-import Toolbar from './Toolbar';
-import data from './data';
+import DbDashboard from 'src/components/DbDashboard';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,11 +18,8 @@ const useStyles = makeStyles((theme) => ({
 
 const CustomerListView = () => {
   const classes = useStyles();
-  const [customers] = useState(data);
 
-  const ref = React.useRef();
-
-  const dbspec = {
+  const dbspecInitial = {
     layout: {
       type: 'grid'
     },
@@ -60,29 +55,21 @@ const CustomerListView = () => {
     ]
   };
 
-  React.useLayoutEffect(() => {
-    const { current } = ref;
+  const [dbspec, setDbSpec] = useState(dbspecInitial);
 
-    let dbdata = {};
+  let dthData = [];
+  let sTS = Date.now() - 100 * 3600 * 1000;
+  for (let i = 0; i < 100; i++) {
+    let cTs = sTS + i * 3600 * 1000;
+    let d = new Date(cTs);
+    let r = Math.random();
+    dthData.push([d, r, r + 0.5]);
+  }
 
-    let dthData = [];
-    let sTS = Date.now() - 100 * 3600 * 1000;
-    for (let i = 0; i < 100; i++) {
-      let cTs = sTS + i * 3600 * 1000;
-      let d = new Date(cTs);
-      let r = Math.random();
-      dthData.push([d, r, r + 0.5]);
-    }
-
-    dbdata['w1'] = {
-      data: dthData
-    };
-
-    dbdata['w2'] = {
-      data: dthData
-    };
-
-    dbdata['w4'] = {
+  let dbDataInitial = {
+    w1: { data: dthData },
+    w2: { data: dthData },
+    w4: {
       data: {
         labels: ['January', 'February', 'March', 'April'],
         datasets: [
@@ -92,15 +79,26 @@ const CustomerListView = () => {
           }
         ]
       }
-    };
+    }
+  };
 
-    current.dbspec = dbspec;
-    current.dbdata = dbdata;
-    current.dark = true;
-    console.log(`useLayoutEffect called !!! => ${JSON.stringify(dbspec)}`);
-  }, [ref]);
+  const [dbdata, setDbData] = useState(dbDataInitial);
 
-  // <!--<Results customers={customers} />-->
+  const handleDbEvent = (event) => {
+    console.log(`Got handleDbEvent: ${event.type}`);
+    if(event.type === 'item-click') {
+      let dthData2 = [];
+      let sTS = Date.now() - 100 * 3600 * 1000;
+      for (let i = 0; i < 100; i++) {
+        let cTs = sTS + i * 3600 * 1000;
+        let d = new Date(cTs);
+        let r = Math.random();
+        dthData2.push([d, r, r + 0.5]);
+      }
+      setDbData(Object.assign(dbdata, {w2: { data: dthData2}} ));
+    }
+  };
+
   return (
     <Page
       className={classes.root}
@@ -108,7 +106,7 @@ const CustomerListView = () => {
     >
       <Container maxWidth={false}>
         <Box mt={3}>
-          <db-dashboard ref={ref} />
+          <DbDashboard dbspec={dbspec} dbdata={dbdata} onDbEvent={handleDbEvent} />
         </Box>
       </Container>
     </Page>
